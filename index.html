@@ -3,150 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snq Chat Delivery</title>
+    <title>Snq Delivery</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #2e7d32; --secondary: #1b5e20; --vip: #ffc107; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 15px; direction: rtl; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 26px; }
+        :root { --primary: #2e7d32; --vip: #ffc107; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; direction: rtl; text-align: right; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
         
-        /* Tab Styles */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 12px; background: #eee; font-weight: bold; transition: 0.3s; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; border-radius: 10px; font-weight: bold; background: #eee; transition: 0.3s; }
         .tab.active { background: var(--primary); color: white; }
         .tab.vip-active { background: var(--vip); color: black; }
 
-        .card { background: #fdfdfd; border: 1px solid #eee; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin: 10px 0 5px; color: #333; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
-        input:focus { border-color: var(--primary); outline: none; }
-
-        .extra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .price-summary { background: #e8f5e9; padding: 15px; border-radius: 15px; border-right: 8px solid var(--primary); margin-top: 20px; }
-        .vip-summary { border-right-color: var(--vip); background: #fffde7; }
+        .card { background: #fafafa; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
+        input[type="text"], input[type="tel"], input[type="number"], select, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
         
-        .btn-submit { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        .btn-submit:active { transform: scale(0.98); }
-        .vip-btn { background: var(--vip); color: black; }
+        .extra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .extra-item { display: flex; align-items: center; gap: 5px; font-size: 14px; }
+        
+        .btn-loc { background: #0288d1; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 5px; }
+        .loc-status { font-size: 13px; color: #666; text-align: center; }
+
+        .summary { background: #e8f5e9; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 18px; text-align: center; margin-top: 15px; }
+        .btn-submit { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🌿 ስንቅ የጫት አድራሽ</h2>
+    <h2>🌿 ሲንቅ ማድረሻ</h2>
 
     <div class="tabs">
-        <div id="normalTab" class="tab active" onclick="switchTab('normal')">መደበኛ (30%)</div>
-        <div id="vipTab" class="tab" onclick="switchTab('vip')">👑 VIP (50%)</div>
+        <div id="normTab" class="tab active" onclick="setMode('normal')">መደበኛ (30%)</div>
+        <div id="vipTab" class="tab" onclick="setMode('vip')">👑 VIP (50%)</div>
     </div>
 
     <div class="card">
-        <label>ሙሉ ስም</label>
-        <input type="text" id="fullName" placeholder="የእርስዎን ስም ያስገቡ">
-        <label>ስልክ ቁጥር</label>
-        <input type="tel" id="phone" placeholder="09...">
-        <label>National ID (አማራጭ)</label>
-        <input type="file" id="idPhoto" accept="image/*">
+        <label>የደንበኛ መረጃ</label>
+        <input type="text" id="fname" placeholder="ሙሉ ስም">
+        <input type="tel" id="phone" placeholder="ስልክ ቁጥር (09...)">
     </div>
 
     <div class="card">
-        <label>መሸጫ ቦታ</label>
+        <label>የጫት ትዕዛዝ</label>
         <select id="shop">
             <option value="ሚስባህ ጫት ቤት">ሚስባህ ጫት ቤት</option>
             <option value="ሰይድ ጫት ቤት">ሰይድ ጫት ቤት</option>
             <option value="ዳውድ ጫት ቤት">ዳውድ ጫት ቤት</option>
             <option value="አረጋሽ ጫት ቤት">አረጋሽ ጫት ቤት</option>
         </select>
-        <label>የጫት አይነት</label>
         <select id="type">
             <option value="በቀላ">በቀላ</option>
             <option value="ኖርማል">ኖርማል</option>
             <option value="ኦንላይን">ኦንላይን</option>
             <option value="ፍርፍር">ፍርፍር</option>
         </select>
-        <label>ዋጋ (ብር)</label>
-        <input type="number" id="basePrice" oninput="calculate()" placeholder="ለምሳሌ 500">
+        <input type="number" id="price" placeholder="የጫት ዋጋ በብር" oninput="calc()">
     </div>
 
     <div class="card">
         <label>ተጨማሪዎች (Extras)</label>
         <div class="extra-grid">
-            <label><input type="checkbox" class="extra" value="30" onchange="calculate()"> ለውዝ (30 ብር)</label>
-            <label><input type="checkbox" class="extra" value="50" onchange="calculate()"> ለውዝ (50 ብር)</label>
-            <label><input type="checkbox" class="extra" value="40" onchange="calculate()"> 1L ውሃ (40 ብር)</label>
-            <label><input type="checkbox" class="extra" value="50" onchange="calculate()"> 2L ውሃ (50 ብር)</label>
+            <label class="extra-item"><input type="checkbox" class="ext" value="30" onchange="calc()"> ለውዝ 30 ብር</label>
+            <label class="extra-item"><input type="checkbox" class="ext" value="50" onchange="calc()"> ለውዝ 50 ብር</label>
+            <label class="extra-item"><input type="checkbox" class="ext" value="40" onchange="calc()"> ውሃ 1 ሊትር (40)</label>
+            <label class="extra-item"><input type="checkbox" class="ext" value="50" onchange="calc()"> ውሃ 2 ሊትር (50)</label>
         </div>
     </div>
 
     <div class="card">
-        <label>ተጨማሪ ማብራሪያ (Description)</label>
-        <textarea id="desc" rows="2" placeholder="ለምሳሌ፡ ቅጠሉ ቀጭን ይሁን..."></textarea>
+        <label>ማብራሪያ (Description)</label>
+        <textarea id="desc" rows="2" placeholder="ልዩ ትዕዛዝ ካለዎት እዚህ ይጻፉ..."></textarea>
     </div>
 
-    <div id="summaryBox" class="price-summary">
-        <div>አገልግሎት ክፍያ: <span id="feeLabel">30</span>%</div>
-        <div style="font-size: 20px; font-weight: bold;">ጠቅላላ ሂሳብ: <span id="total">0</span> ብር</div>
+    <div class="card">
+        <label>አድራሻ (Location)</label>
+        <button class="btn-loc" onclick="getLoc()">📍 ያለሁበትን ቦታ አግኝ</button>
+        <div id="locStatus" class="loc-status">ቦታ አልተመረጠም</div>
     </div>
 
-    <button id="mainBtn" class="btn-submit" onclick="submitOrder()">አሁኑኑ እዘዝ</button>
+    <div class="summary">
+        ጠቅላላ ሂሳብ: <span id="total">0</span> ብር
+    </div>
+
+    <button class="btn-submit" onclick="submitOrder()">አሁኑኑ እዘዝ</button>
 </div>
 
 <script>
-    let currentMode = 'normal';
     const tg = window.Telegram.WebApp;
     tg.expand();
+    let mode = 'normal';
+    let userLoc = { lat: 0, lng: 0 };
 
-    function switchTab(mode) {
-        currentMode = mode;
-        document.getElementById('normalTab').className = mode === 'normal' ? 'tab active' : 'tab';
-        document.getElementById('vipTab').className = mode === 'vip' ? 'tab vip-active' : 'tab';
-        document.getElementById('summaryBox').className = mode === 'vip' ? 'price-summary vip-summary' : 'price-summary';
-        document.getElementById('mainBtn').className = mode === 'vip' ? 'btn-submit vip-btn' : 'btn-submit';
-        document.getElementById('feeLabel').innerText = mode === 'vip' ? '50' : '30';
-        calculate();
+    function setMode(m) {
+        mode = m;
+        document.getElementById('normTab').className = m === 'normal' ? 'tab active' : 'tab';
+        document.getElementById('vipTab').className = m === 'vip' ? 'tab vip-active' : 'tab';
+        calc();
     }
 
-    function calculate() {
-        let price = parseFloat(document.getElementById('basePrice').value) || 0;
-        let feePercent = currentMode === 'vip' ? 0.50 : 0.30;
-        let extras = 0;
-        document.querySelectorAll('.extra:checked').forEach(el => extras += parseFloat(el.value));
+    function getLoc() {
+        if (navigator.geolocation) {
+            document.getElementById('locStatus').innerText = "በመፈለግ ላይ...";
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    document.getElementById('locStatus').innerHTML = "✅ <b>ቦታ ተገኝቷል!</b>";
+                    document.getElementById('locStatus').style.color = "green";
+                },
+                err => {
+                    document.getElementById('locStatus').innerText = "❌ ሎኬሽን አልተፈቀደም";
+                    document.getElementById('locStatus').style.color = "red";
+                }
+            );
+        }
+    }
+
+    function calc() {
+        let base = parseFloat(document.getElementById('price').value) || 0;
+        let percent = mode === 'vip' ? 0.50 : 0.30;
+        let extTotal = 0;
         
-        let total = price + (price * feePercent) + extras;
+        document.querySelectorAll('.ext:checked').forEach(el => extTotal += parseFloat(el.value));
+        
+        let total = base + (base * percent) + extTotal;
         document.getElementById('total').innerText = total.toFixed(2);
     }
 
     function submitOrder() {
-    const name = document.getElementById('fullName').value;
-    const phone = document.getElementById('phone').value;
-    
-    if(!name || !phone) { 
-        alert("እባክዎ ስም እና ስልክ ያስገቡ!"); 
-        return; 
+        let fname = document.getElementById('fname').value;
+        let phone = document.getElementById('phone').value;
+
+        if (!fname || !phone) {
+            alert("እባክዎ ስም እና ስልክ ቁጥር ያስገቡ!");
+            return;
+        }
+
+        let extrasList = [];
+        document.querySelectorAll('.ext:checked').forEach(el => {
+            extrasList.push(el.parentElement.innerText.trim());
+        });
+
+        const data = {
+            mode: mode,
+            name: fname,
+            phone: phone,
+            shop: document.getElementById('shop').value,
+            type: document.getElementById('type').value,
+            extras: extrasList.length > 0 ? extrasList.join(" | ") : "የለም",
+            desc: document.getElementById('desc').value || "የለም",
+            total: document.getElementById('total').innerText,
+            location: userLoc
+        };
+
+        // መረጃውን ለቦቱ መላክ እና ዌብሳይቱን መዝጋት
+        tg.sendData(JSON.stringify(data));
+        tg.close();
     }
-
-    // የተመረጡ ተጨማሪዎችን ስም ዝርዝር መያዝ
-    let extrasList = [];
-    document.querySelectorAll('.extra:checked').forEach(el => {
-        extrasList.push(el.parentElement.innerText.trim());
-    });
-
-    const data = {
-        mode: currentMode,
-        customer: name,
-        phone: phone,
-        shop: document.getElementById('shop').value,
-        type: document.getElementById('type').value,
-        total: document.getElementById('total').innerText,
-        extras_list: extrasList.join(", "),
-        description: document.getElementById('desc').value
-    };
-
-    // ይህ ወሳኙ መስመር ነው
-    window.Telegram.WebApp.sendData(JSON.stringify(data));
-}
-
 </script>
 </body>
 </html>

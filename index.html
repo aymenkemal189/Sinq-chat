@@ -3,107 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Delivery Mini App</title>
+    <title>Snq Chat Delivery</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; direction: rtl; text-align: right; }
-        .container { max-width: 450px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin: auto; }
-        h2 { color: #1b5e20; text-align: center; font-size: 24px; }
-        .card { border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #fafafa; }
-        label { font-weight: bold; color: #444; }
-        select, input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: 0.3s; }
-        select:focus, input:focus { border-color: #2e7d32; outline: none; }
-        .price-summary { background: #e8f5e9; padding: 15px; border-radius: 10px; border-right: 6px solid #2e7d32; }
-        .btn-location { background: #1976d2; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 10px; }
-        .btn-order { background: #2e7d32; color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); }
-        .status { color: #666; font-size: 13px; text-align: center; margin-top: 5px; }
+        :root { --primary: #2e7d32; --secondary: #1b5e20; --vip: #ffc107; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 15px; direction: rtl; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 26px; }
+        
+        /* Tab Styles */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 12px; background: #eee; font-weight: bold; transition: 0.3s; }
+        .tab.active { background: var(--primary); color: white; }
+        .tab.vip-active { background: var(--vip); color: black; }
+
+        .card { background: #fdfdfd; border: 1px solid #eee; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin: 10px 0 5px; color: #333; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 15px; }
+        input:focus { border-color: var(--primary); outline: none; }
+
+        .extra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .price-summary { background: #e8f5e9; padding: 15px; border-radius: 15px; border-right: 8px solid var(--primary); margin-top: 20px; }
+        .vip-summary { border-right-color: var(--vip); background: #fffde7; }
+        
+        .btn-submit { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-submit:active { transform: scale(0.98); }
+        .vip-btn { background: var(--vip); color: black; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>🌿 ስንቅ የጫት አድራሽ</h2>
-        
-        <div class="card">
-            <label>መሸጫ እና አይነት</label>
-            <select id="shop">
-                <option value="ሚስባህ ጫት ቤት">ሚስባህ ጫት ቤት</option>
-                <option value="ሰይድ ጫት ቤት">ሰይድ ጫት ቤት</option>
-                <option value="ዳውድ ጫት ቤት">ዳውድ ጫት ቤት</option>
-                <option value="አረጋሽ ጫት ቤት">አረጋሽ ጫት ቤት</option>
-            </select>
-            <select id="type">
-                <option value="በቀላ">በቀላ</option>
-                <option value="ኖርማል">ኖርማል</option>
-                <option value="ኦንላይን">ኦንላይን</option>
-                <option value="ፍርፍር">ፍርፍር</option>
-            </select>
-            <input type="number" id="basePrice" placeholder="የጫት ዋጋ በብር" oninput="calculate()">
-        </div>
 
-        <div class="card">
-            <label>አድራሻ (Location)</label>
-            <button class="btn-location" onclick="getLocation()">📍 ያለሁበትን ቦታ ላክ</button>
-            <div id="locationStatus" class="status">ቦታ አልተመረጠም</div>
-            <input type="number" id="distance" placeholder="ርቀት በኪሜ (ካርታው ያሰላዋል)" oninput="calculate()">
-        </div>
+<div class="container">
+    <h2>🌿 ስንቅ የጫት አድራሽ</h2>
 
-        <div class="price-summary">
-            <div>የአገልግሎት ክፍያ (30%): <span id="serviceFee">0</span> ብር</div>
-            <div>የርቀት ክፍያ (ከ2ኪሜ በላይ): <span id="distFee">0</span> ብር</div>
-            <hr>
-            <div style="font-weight:bold; font-size:1.3em; color:#1b5e20;">ጠቅላላ ሂሳብ: <span id="total">0</span> ብር</div>
-        </div>
-
-        <button class="btn-order" onclick="submitOrder()">አሁን እዘዝ</button>
+    <div class="tabs">
+        <div id="normalTab" class="tab active" onclick="switchTab('normal')">መደበኛ (30%)</div>
+        <div id="vipTab" class="tab" onclick="switchTab('vip')">👑 VIP (50%)</div>
     </div>
 
-    <script>
-        let userLocation = null;
+    <div class="card">
+        <label>ሙሉ ስም</label>
+        <input type="text" id="fullName" placeholder="የእርስዎን ስም ያስገቡ">
+        <label>ስልክ ቁጥር</label>
+        <input type="tel" id="phone" placeholder="09...">
+        <label>National ID (አማራጭ)</label>
+        <input type="file" id="idPhoto" accept="image/*">
+    </div>
 
-        function getLocation() {
-            if (navigator.geolocation) {
-                document.getElementById('locationStatus').innerText = "በመፈለግ ላይ...";
-                navigator.geolocation.getCurrentPosition((position) => {
-                    userLocation = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-                    document.getElementById('locationStatus').innerText = "✅ ቦታ ተገኝቷል!";
-                    // ለሙከራ ርቀቱን 3 ኪሜ እናድርገው (በእውነተኛ ካርታ እንዲሰላ ማድረግ ይቻላል)
-                    document.getElementById('distance').value = 3; 
-                    calculate();
-                });
-            }
-        }
+    <div class="card">
+        <label>መሸጫ ቦታ</label>
+        <select id="shop">
+            <option value="ሚስባህ ጫት ቤት">ሚስባህ ጫት ቤት</option>
+            <option value="ሰይድ ጫት ቤት">ሰይድ ጫት ቤት</option>
+            <option value="ዳውድ ጫት ቤት">ዳውድ ጫት ቤት</option>
+            <option value="አረጋሽ ጫት ቤት">አረጋሽ ጫት ቤት</option>
+        </select>
+        <label>የጫት አይነት</label>
+        <select id="type">
+            <option value="በቀላ">በቀላ</option>
+            <option value="ኖርማል">ኖርማል</option>
+            <option value="ኦንላይን">ኦንላይን</option>
+            <option value="ፍርፍር">ፍርፍር</option>
+        </select>
+        <label>ዋጋ (ብር)</label>
+        <input type="number" id="basePrice" oninput="calculate()" placeholder="ለምሳሌ 500">
+    </div>
 
-        function calculate() {
-            let price = parseFloat(document.getElementById('basePrice').value) || 0;
-            let dist = parseFloat(document.getElementById('distance').value) || 0;
-            
-            let sFee = price * 0.30;
-            let dFee = 0;
-            
-            if (dist > 2) {
-                // ከ 2 ኪሜ በላይ ለእያንዳንዱ ኪሜ 20 ብር
-                dFee = (dist - 2) * 20;
-            }
-            
-            document.getElementById('serviceFee').innerText = sFee.toFixed(2);
-            document.getElementById('distFee').innerText = dFee.toFixed(2);
-            document.getElementById('total').innerText = (price + sFee + dFee).toFixed(2);
-        }
+    <div class="card">
+        <label>ተጨማሪዎች (Extras)</label>
+        <div class="extra-grid">
+            <label><input type="checkbox" class="extra" value="30" onchange="calculate()"> ለውዝ (30 ብር)</label>
+            <label><input type="checkbox" class="extra" value="50" onchange="calculate()"> ለውዝ (50 ብር)</label>
+            <label><input type="checkbox" class="extra" value="40" onchange="calculate()"> 1L ውሃ (40 ብር)</label>
+            <label><input type="checkbox" class="extra" value="50" onchange="calculate()"> 2L ውሃ (50 ብር)</label>
+        </div>
+    </div>
 
-        function submitOrder() {
-            const tg = window.Telegram.WebApp;
-            const data = {
-                shop: document.getElementById('shop').value,
-                type: document.getElementById('type').value,
-                total: document.getElementById('total').innerText,
-                location: userLocation
-            };
-            tg.sendData(JSON.stringify(data)); // መረጃውን ለቦቱ ይልካል
-            tg.close();
-        }
-    </script>
+    <div class="card">
+        <label>ተጨማሪ ማብራሪያ (Description)</label>
+        <textarea id="desc" rows="2" placeholder="ለምሳሌ፡ ቅጠሉ ቀጭን ይሁን..."></textarea>
+    </div>
+
+    <div id="summaryBox" class="price-summary">
+        <div>አገልግሎት ክፍያ: <span id="feeLabel">30</span>%</div>
+        <div style="font-size: 20px; font-weight: bold;">ጠቅላላ ሂሳብ: <span id="total">0</span> ብር</div>
+    </div>
+
+    <button id="mainBtn" class="btn-submit" onclick="submitOrder()">አሁኑኑ እዘዝ</button>
+</div>
+
+<script>
+    let currentMode = 'normal';
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    function switchTab(mode) {
+        currentMode = mode;
+        document.getElementById('normalTab').className = mode === 'normal' ? 'tab active' : 'tab';
+        document.getElementById('vipTab').className = mode === 'vip' ? 'tab vip-active' : 'tab';
+        document.getElementById('summaryBox').className = mode === 'vip' ? 'price-summary vip-summary' : 'price-summary';
+        document.getElementById('mainBtn').className = mode === 'vip' ? 'btn-submit vip-btn' : 'btn-submit';
+        document.getElementById('feeLabel').innerText = mode === 'vip' ? '50' : '30';
+        calculate();
+    }
+
+    function calculate() {
+        let price = parseFloat(document.getElementById('basePrice').value) || 0;
+        let feePercent = currentMode === 'vip' ? 0.50 : 0.30;
+        let extras = 0;
+        document.querySelectorAll('.extra:checked').forEach(el => extras += parseFloat(el.value));
+        
+        let total = price + (price * feePercent) + extras;
+        document.getElementById('total').innerText = total.toFixed(2);
+    }
+
+    function submitOrder() {
+        const name = document.getElementById('fullName').value;
+        const phone = document.getElementById('phone').value;
+        if(!name || !phone) { alert("እባክዎ ስም እና ስልክ ያስገቡ!"); return; }
+
+        const data = {
+            mode: currentMode,
+            customer: name,
+            phone: phone,
+            shop: document.getElementById('shop').value,
+            type: document.getElementById('type').value,
+            base: document.getElementById('basePrice').value,
+            extras: document.getElementById('total').innerText, // This is total
+            description: document.getElementById('desc').value,
+        };
+
+        tg.sendData(JSON.stringify(data));
+    }
+</script>
 </body>
 </html>

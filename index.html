@@ -9,7 +9,7 @@
         :root { --primary: #2e7d32; --vip: #ffc107; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; direction: rtl; text-align: right; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; font-weight: 800; }
         
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; border-radius: 10px; font-weight: bold; background: #eee; transition: 0.3s; }
@@ -26,8 +26,15 @@
         .btn-loc { background: #0288d1; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 5px; }
         .loc-status { font-size: 13px; color: #666; text-align: center; }
 
-        .summary { background: #e8f5e9; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 18px; text-align: center; margin-top: 15px; }
-        .btn-submit { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        /* የክፍያ ክፍል ዲዛይን */
+        .payment-box { background: #e3f2fd; border: 2px dashed #1976d2; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .payment-box h3 { color: #1976d2; margin-top: 0; margin-bottom: 10px; font-size: 16px; }
+        .payment-box p { margin: 5px 0; font-size: 14px; font-weight: bold; }
+        .file-input { background: white; padding: 10px; border-radius: 8px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
+
+        .summary { background: #e8f5e9; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 18px; text-align: center; margin-top: 15px; color: #2e7d32; }
+        .btn-submit { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        .btn-submit:disabled { background: #9e9e9e; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -74,21 +81,25 @@
     </div>
 
     <div class="card">
-        <label>ማብራሪያ (Description)</label>
-        <textarea id="desc" rows="2" placeholder="ልዩ ትዕዛዝ ካለዎት እዚህ ይጻፉ..."></textarea>
-    </div>
-
-    <div class="card">
         <label>አድራሻ (Location)</label>
         <button class="btn-loc" onclick="getLoc()">📍 ያለሁበትን ቦታ አግኝ</button>
         <div id="locStatus" class="loc-status">ቦታ አልተመረጠም</div>
     </div>
 
     <div class="summary">
-        ጠቅላላ ሂሳብ: <span id="total">0</span> ብር
+        ጠቅላላ የሚከፈል ሂሳብ: <span id="total">0</span> ብር
     </div>
 
-    <button id="orderBtn" class="btn-submit" onclick="submitOrder()">አሁኑኑ እዘዝ</button>
+    <div class="payment-box">
+        <h3>💳 የክፍያ ማረጋገጫ</h3>
+        <p>🏦 ንግድ ባንክ (CBE): 1000562339427</p>
+        <p>📱 ቴሌብር / CBE Birr: 0996910607</p>
+        <hr style="border:0; border-top:1px solid #bbdefb; margin:10px 0;">
+        <label>የከፈሉበትን ደረሰኝ (Screenshot) ያስገቡ *</label>
+        <input type="file" id="receipt" class="file-input" accept="image/*" required>
+    </div>
+
+    <button id="orderBtn" class="btn-submit" onclick="submitOrder()">✅ ደረሰኝ አስገብቻለሁ፣ አሁኑኑ እዘዝ</button>
 </div>
 
 <script>
@@ -135,14 +146,20 @@
     function submitOrder() {
         let fname = document.getElementById('fname').value;
         let phone = document.getElementById('phone').value;
+        let receiptFile = document.getElementById('receipt').files[0];
 
         if (!fname || !phone) {
             alert("እባክዎ ስም እና ስልክ ቁጥር ያስገቡ!");
             return;
         }
 
+        if (!receiptFile) {
+            alert("እባክዎ ክፍያ የፈጸሙበትን ደረሰኝ (Screenshot) ያስገቡ!");
+            return;
+        }
+
         let orderBtn = document.getElementById('orderBtn');
-        orderBtn.innerText = "በመላክ ላይ...";
+        orderBtn.innerText = "ደረሰኝ በመላክ ላይ... እባክዎ ይጠብቁ ⏳";
         orderBtn.disabled = true;
 
         let extrasList = [];
@@ -151,50 +168,55 @@
         });
 
         let mode_icon = mode === 'vip' ? "👑 VIP ትዕዛዝ" : "🌿 መደበኛ ትዕዛዝ";
-        let map_link = userLoc.lat !== 0 ? `https://www.google.com/maps?q=${userLoc.lat},${userLoc.lng}` : "📍 ሎኬሽን አልተላከም";
+        let map_link = userLoc.lat !== 0 ? `https://www.google.com/maps?q=$${userLoc.lat},${userLoc.lng}` : "📍 ሎኬሽን አልተላከም";
+        
+        // የደንበኛውን የቴሌግራም መረጃ ማግኘት
+        let tgUser = tg.initDataUnsafe?.user;
+        let tgUsername = tgUser?.username ? `@${tgUser.username}` : (tgUser?.first_name || fname);
         
         let orderMessage = `
 ${mode_icon}
 ------------------------------
-👤 ስም: ${fname}
+👤 ስም: ${fname} (TG: ${tgUsername})
 📞 ስልክ: ${phone}
 🏪 መሸጫ: ${document.getElementById('shop').value}
 🍃 አይነት: ${document.getElementById('type').value}
 📦 ተጨማሪ: ${extrasList.length > 0 ? extrasList.join(", ") : "የለም"}
-📝 ማብራሪያ: ${document.getElementById('desc').value || "የለም"}
 💰 ጠቅላላ ሂሳብ: ${document.getElementById('total').innerText} ብር
 ------------------------------
 🌍 አድራሻ (ካርታ):
 ${map_link}
-        `;
+`;
 
-        // ቀጥታ ወደ ቴሌግራም መላኪያ (Python አያስፈልግም!)
         const botToken = "8666783314:AAEzdZ0VOUJ7MFH8-UeT900z-fm80ds7NVk";
         const adminId = "1493452810";
-        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+        
+        // ፎቶውን እና ጽሁፉን በአንድ ላይ መላኪያ (FormData)
+        let formData = new FormData();
+        formData.append("chat_id", adminId);
+        formData.append("photo", receiptFile);
+        formData.append("caption", orderMessage);
+
+        const url = `https://api.telegram.org/bot${botToken}/sendPhoto`;
 
         fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                chat_id: adminId,
-                text: orderMessage
-            })
+            body: formData
         })
         .then(response => response.json())
         .then(data => {
             if(data.ok) {
-                alert("✅ እናመሰግናለን! ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል።");
+                alert("✅ ደረሰኝዎ ደርሶናል! ትዕዛዝዎ ተልኳል፤ ትንሽ ይጠብቁ።");
                 tg.close();
             } else {
-                alert("❌ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።");
-                orderBtn.innerText = "አሁኑኑ እዘዝ";
+                alert("❌ ስህተት አጋጥሟል! ፋይሉ በጣም ትልቅ ሊሆን ይችላል።");
+                orderBtn.innerText = "✅ ደረሰኝ አስገብቻለሁ፣ አሁኑኑ እዘዝ";
                 orderBtn.disabled = false;
             }
         })
         .catch(error => {
             alert("❌ የኢንተርኔት ግንኙነትዎን ያረጋግጡ!");
-            orderBtn.innerText = "አሁኑኑ እዘዝ";
+            orderBtn.innerText = "✅ ደረሰኝ አስገብቻለሁ፣ አሁኑኑ እዘዝ";
             orderBtn.disabled = false;
         });
     }

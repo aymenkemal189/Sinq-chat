@@ -88,7 +88,7 @@
         ጠቅላላ ሂሳብ: <span id="total">0</span> ብር
     </div>
 
-    <button class="btn-submit" onclick="submitOrder()">አሁኑኑ እዘዝ</button>
+    <button id="orderBtn" class="btn-submit" onclick="submitOrder()">አሁኑኑ እዘዝ</button>
 </div>
 
 <script>
@@ -141,26 +141,62 @@
             return;
         }
 
+        let orderBtn = document.getElementById('orderBtn');
+        orderBtn.innerText = "በመላክ ላይ...";
+        orderBtn.disabled = true;
+
         let extrasList = [];
         document.querySelectorAll('.ext:checked').forEach(el => {
             extrasList.push(el.parentElement.innerText.trim());
         });
 
-        const data = {
-            mode: mode,
-            name: fname,
-            phone: phone,
-            shop: document.getElementById('shop').value,
-            type: document.getElementById('type').value,
-            extras: extrasList.length > 0 ? extrasList.join(" | ") : "የለም",
-            desc: document.getElementById('desc').value || "የለም",
-            total: document.getElementById('total').innerText,
-            location: userLoc
-        };
+        let mode_icon = mode === 'vip' ? "👑 VIP ትዕዛዝ" : "🌿 መደበኛ ትዕዛዝ";
+        let map_link = userLoc.lat !== 0 ? `https://www.google.com/maps?q=${userLoc.lat},${userLoc.lng}` : "📍 ሎኬሽን አልተላከም";
+        
+        let orderMessage = `
+${mode_icon}
+------------------------------
+👤 ስም: ${fname}
+📞 ስልክ: ${phone}
+🏪 መሸጫ: ${document.getElementById('shop').value}
+🍃 አይነት: ${document.getElementById('type').value}
+📦 ተጨማሪ: ${extrasList.length > 0 ? extrasList.join(", ") : "የለም"}
+📝 ማብራሪያ: ${document.getElementById('desc').value || "የለም"}
+💰 ጠቅላላ ሂሳብ: ${document.getElementById('total').innerText} ብር
+------------------------------
+🌍 አድራሻ (ካርታ):
+${map_link}
+        `;
 
-        // መረጃውን ለቦቱ መላክ እና ዌብሳይቱን መዝጋት
-        tg.sendData(JSON.stringify(data));
-        tg.close();
+        // ቀጥታ ወደ ቴሌግራም መላኪያ (Python አያስፈልግም!)
+        const botToken = "8666783314:AAEzdZ0VOUJ7MFH8-UeT900z-fm80ds7NVk";
+        const adminId = "1493452810";
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+        fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                chat_id: adminId,
+                text: orderMessage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.ok) {
+                alert("✅ እናመሰግናለን! ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል።");
+                tg.close();
+            } else {
+                alert("❌ ስህተት አጋጥሟል! እባክዎ እንደገና ይሞክሩ።");
+                orderBtn.innerText = "አሁኑኑ እዘዝ";
+                orderBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            alert("❌ የኢንተርኔት ግንኙነትዎን ያረጋግጡ!");
+            orderBtn.innerText = "አሁኑኑ እዘዝ";
+            orderBtn.disabled = false;
+        });
     }
 </script>
 </body>
